@@ -17,7 +17,7 @@ export function CariocaGame() {
   const agregarCarta = () => {
     if (!numero.trim()) return;
 
-    if (parseInt(numero) < 1) {
+    if (parseInt(numero) < 1 || parseInt(numero) > 13) {
       return
     }
 
