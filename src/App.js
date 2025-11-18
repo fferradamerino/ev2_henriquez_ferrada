@@ -1,20 +1,13 @@
 import React, { Fragment } from "react";
 import ReactDOM from "react-dom/client";
+import {CariocaGame} from "./components/CariocaGame";
 
 import "./css/bootstrap.min.css";
 
 export function App() {
   return (
     <Fragment>
-      <div className="container">
-        <form>
-          <div class="form-group">
-            <label for="card">Número de carta</label>
-            <input type="text" class="form-control" id="card" placeholder="Ingrese su carta" />
-          </div>
-          <button type="submit" class="btn btn-primary">Añadir carta</button>
-        </form>
-      </div>
+      <CariocaGame />
     </Fragment>
   );
 }
