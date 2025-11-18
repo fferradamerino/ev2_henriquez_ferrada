@@ -17,6 +17,10 @@ export function CariocaGame() {
   const agregarCarta = () => {
     if (!numero.trim()) return;
 
+    if (parseInt(numero) < 1) {
+      return
+    }
+
     const nueva = {
       id: crypto.randomUUID(),
       numero: parseInt(numero),
