@@ -18,7 +18,7 @@ export function CariocaGame() {
   if (!numero.trim()) return;
 
   const convertido = convertirNumero(numero);
-  if (isNaN(convertido)) return; // evita valores inválidos
+  if (isNaN(convertido) || convertido < 1 || convertido > 13) return; // valida rango 1-13
 
   const nueva = {
     id: crypto.randomUUID(),
@@ -37,6 +37,14 @@ export function CariocaGame() {
   if (v === "Q") return 12;
   if (v === "K") return 13;
   return parseInt(v); // números 2–10
+};
+
+  const mostrarNumero = (numero) => {
+  if (numero === 1) return "A";
+  if (numero === 11) return "J";
+  if (numero === 12) return "Q";
+  if (numero === 13) return "K";
+  return numero;
 };
 
 
@@ -182,7 +190,7 @@ const validarJuego = async () => {
                 background: "white"
               }}
             >
-              <div>{carta.numero}</div>
+              <div>{mostrarNumero(carta.numero)}</div>
               <div>{carta.pinta}</div>
 
               <button
