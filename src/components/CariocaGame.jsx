@@ -42,21 +42,30 @@ export function CariocaGame() {
   // 3) Validación: SOLO escaleras
   // aceptamos **3 cartas consecutivas**
   // -------------------------------
-  const esEscaleraValida = () => {
-    if (cartas.length !== 3) return false;
+  const esEscalera = (grupo) => {
+  const mismaPinta = grupo.every(c => c.pinta === grupo[0].pinta);
+  if (!mismaPinta) return false;
 
-    // Todas misma pinta?
-    const mismaPinta = cartas.every(c => c.pinta === cartas[0].pinta);
-    if (!mismaPinta) return false;
+  const orden = [...grupo].sort((a, b) => a.numero - b.numero);
 
-    // Ordenar
-    const ordenadas = [...cartas].sort((a,b) => a.numero - b.numero);
+  return (
+    orden[1].numero === orden[0].numero + 1 &&
+    orden[2].numero === orden[1].numero + 1
+  );
+};
+const validarTresEscalas = () => {
+  if (cartas.length !== 9) return false; // 3 escalas = 9 cartas
 
-    return (
-      ordenadas[1].numero === ordenadas[0].numero + 1 &&
-      ordenadas[2].numero === ordenadas[1].numero + 1
-    );
-  };
+  // Agrupar en grupos de 3 cartas consecutivas
+  const grupos = [];
+  for (let i = 0; i < cartas.length; i += 3) {
+    grupos.push(cartas.slice(i, i + 3));
+  }
+
+  // Revisar que los 3 grupos sean escaleras válidas
+  return grupos.every(g => g.length === 3 && esEscalera(g));
+};
+
 
   // -------------------------------
   // Evitar jugada repetida
@@ -73,31 +82,32 @@ export function CariocaGame() {
   // -------------------------------
   // Validar y guardar
   // -------------------------------
-  const validarJuego = async () => {
-    if (!esEscaleraValida()) {
-      setResultado("NO FORMA JUEGO :C");
-      return;
-    }
+ const validarJuego = async () => {
+  if (!validarTresEscalas()) {
+    setResultado("NO FORMA JUEGO :C");
+    return;
+  }
 
-    // Creamos una clave única para evitar duplicados
-    const jugadaKey = cartas
-      .map(c => `${c.numero}-${c.pinta}`)
-      .sort()
-      .join("|");
+  // clave única de jugada (evita duplicados)
+  const jugadaKey = cartas
+    .map(c => `${c.numero}-${c.pinta}`)
+    .sort()
+    .join("|");
 
-    if (await jugadaYaExiste(jugadaKey)) {
-      setResultado("JUGADA YA REGISTRADA");
-      return;
-    }
+  if (await jugadaYaExiste(jugadaKey)) {
+    setResultado("JUGADA YA REGISTRADA");
+    return;
+  }
 
-    await addDoc(collection(db, "jugadascarioca"), {
-      cartas,
-      key: jugadaKey,
-      timestamp: new Date()
-    });
+  await addDoc(collection(db, "jugadascarioca"), {
+    cartas,
+    key: jugadaKey,
+    timestamp: new Date()
+  });
 
-    setResultado("¡JUEGO VÁLIDO! ✔");
-  };
+  setResultado("¡3 ESCALAS CORRECTAS! ✔");
+};
+
 
   return (
     <div className="container mt-4">
