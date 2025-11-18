@@ -15,20 +15,17 @@ export function CariocaGame() {
   // 1) Agregar Carta
   // -------------------------------
   const agregarCarta = () => {
-  if (!numero.trim()) return;
-    if (!numero.trim()) return;
-
     if (numero === "K") {
-      numero = 13
+      setNumero("13")
     } else if (numero === "Q") {
-      numero = 12
+      setNumero("12")
     } else if (numero === "J") {
-      numero = 11
+      setNumero("11")
     } else if (numero === "A") {
-      numero = 1
+      setNumero("1")
     }
 
-    console.log(numero)
+  if (!numero.trim()) return;
 
   const convertido = convertirNumero(numero);
   if (isNaN(convertido) || convertido < 1 || convertido > 13) return; // valida rango 1-13
@@ -158,7 +155,7 @@ const validarJuego = async () => {
       <div className="d-flex gap-3">
         <input
           className="form-control"
-          type="number"
+          type="text"
           placeholder="Número"
           value={numero}
           onChange={(e) => setNumero(e.target.value)}
