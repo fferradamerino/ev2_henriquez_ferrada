@@ -16,6 +16,19 @@ export function CariocaGame() {
   // -------------------------------
   const agregarCarta = () => {
   if (!numero.trim()) return;
+    if (!numero.trim()) return;
+
+    if (numero === "K") {
+      numero = 13
+    } else if (numero === "Q") {
+      numero = 12
+    } else if (numero === "J") {
+      numero = 11
+    } else if (numero === "A") {
+      numero = 1
+    }
+
+    console.log(numero)
 
   const convertido = convertirNumero(numero);
   if (isNaN(convertido) || convertido < 1 || convertido > 13) return; // valida rango 1-13
@@ -118,13 +131,23 @@ const validarJuego = async () => {
   });
 
   setResultado("¡3 ESCALAS CORRECTAS! ✔");
-
-  // Vaciar cartas después de guardar
-  setCartas([]);
 };
 
 
-
+  const obtenerNumero = (numero) => {
+    switch(numero) {
+      case 1:
+        return "A"
+      case 11:
+        return "J"
+      case 12:
+        return "Q"
+      case 13:
+        return "K"
+      default:
+        return numero
+    }
+  }
 
   return (
     <div className="container mt-4">
