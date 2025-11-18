@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
 
 const pintas = ["diamante", "corazon", "trebol", "pica"];
 
@@ -55,12 +53,13 @@ export function CariocaGame() {
   };
 
   const esEscalera = (grupo) => {
-    if (!grupo || grupo.length !== 3) return false;
+    if (!grupo || grupo.length !== 4) return false;
     const mismaPinta = grupo.every(c => c.pinta === grupo[0].pinta);
     if (!mismaPinta) return false;
     const orden = [...grupo].sort((a, b) => a.numero - b.numero);
     return orden[1].numero === orden[0].numero + 1 &&
-           orden[2].numero === orden[1].numero + 1;
+           orden[2].numero === orden[1].numero + 1 &&
+           orden[3].numero === orden[2].numero + 1;
   };
 
   const encontrarEscalasPorPinta = (listaCartas) => {
@@ -73,14 +72,14 @@ export function CariocaGame() {
     const todas = [];
     for (const p in porPinta) {
       const arr = porPinta[p].slice().sort((a, b) => a.numero - b.numero);
-      for (let i = 0; i <= arr.length - 3; i++) {
-        const grupo = [arr[i], arr[i+1], arr[i+2]];
+      for (let i = 0; i <= arr.length - 4; i++) {
+        const grupo = [arr[i], arr[i+1], arr[i+2], arr[i+3]];
         if (esEscalera(grupo)) {
           todas.push(grupo);
         }
       }
     }
-    return todas; // array de grupos (cada grupo = 3 cartas)
+    return todas;
   };
 
   const encontrarTresEscalasDisjuntas = (listaCartas) => {
@@ -111,7 +110,6 @@ export function CariocaGame() {
     const encontrado = encontrarTresEscalasDisjuntas(cartas);
     if (!encontrado) {
       setResultado("No se encontraron 3 escalas completas para agrupar.");
-      // opcional: breve clear del mensaje en unos segundos
       setTimeout(() => setResultado(""), 2000);
       return;
     }
@@ -144,7 +142,7 @@ export function CariocaGame() {
 
     const tiposEscaleras = encontrado.map(escala => {
       const sorted = escala.slice().sort((a, b) => a.numero - b.numero);
-      return `${sorted[0].numero}-${sorted[1].numero}-${sorted[2].numero}-${sorted[0].pinta}`;
+      return `${sorted[0].numero}-${sorted[1].numero}-${sorted[2].numero}-${sorted[3].numero}-${sorted[0].pinta}`;
     });
 
     const conteo = {};
@@ -155,11 +153,9 @@ export function CariocaGame() {
     const maxRepeticiones = Math.max(...Object.values(conteo));
     
     if (maxRepeticiones <= 2) {
-      await addDoc(collection(db, "jugadascarioca"), {
-        cartas,
-        timestamp: new Date()
-      });
-      setResultado("¡3 ESCALAS CORRECTAS! ✔");
+      // Simulación de guardado en DB (Firebase removido para compatibilidad)
+      console.log("Jugada guardada:", { cartas, timestamp: new Date() });
+      setResultado("¡3 ESCALAS CORRECTAS! ✓");
       setCartas([]);
     } else {
       setResultado("NO FORMA JUEGO :C");
@@ -168,21 +164,23 @@ export function CariocaGame() {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-3">Juego de Carioca</h2>
+      <h2 className="mb-3">Juego de Carioca (Escalas de 4)</h2>
 
-      <div className="d-flex gap-2 align-items-center">
+      <div className="d-flex gap-2 align-items-center flex-wrap">
         <input
           className="form-control"
           type="text"
           placeholder="Número (A,2..10,J,Q,K)"
           value={numero}
           onChange={(e) => setNumero(e.target.value)}
+          style={{ maxWidth: "200px" }}
         />
 
         <select
           className="form-select"
           value={pinta}
           onChange={(e) => setPinta(e.target.value)}
+          style={{ maxWidth: "150px" }}
         >
           {pintas.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
@@ -252,7 +250,6 @@ export function CariocaGame() {
         </AnimatePresence>
       </div>
 
-      {/* Controles inferiores */}
       <div className="mt-3 d-flex gap-2">
         <button className="btn btn-success" onClick={validarJuego}>Validar Juego</button>
       </div>
