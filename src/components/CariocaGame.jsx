@@ -102,19 +102,6 @@ const detectarTresEscalas = () => {
 };
 
 
-
-  // -------------------------------
-  // Evitar jugada repetida
-  // -------------------------------
-  const jugadaYaExiste = async (jugadaKey) => {
-    const querySnapshot = await getDocs(collection(db, "jugadascarioca"));
-
-    for (let doc of querySnapshot.docs) {
-      if (doc.data().key === jugadaKey) return true;
-    }
-    return false;
-  };
-
   // -------------------------------
   // Validar y guardar
   // -------------------------------
@@ -124,24 +111,18 @@ const validarJuego = async () => {
     return;
   }
 
-  const jugadaKey = cartas
-    .map(c => `${c.numero}-${c.pinta}`)
-    .sort()
-    .join("|");
-
-  if (await jugadaYaExiste(jugadaKey)) {
-    setResultado("JUGADA YA REGISTRADA");
-    return;
-  }
-
+  // Guardar jugada válida
   await addDoc(collection(db, "jugadascarioca"), {
     cartas,
-    key: jugadaKey,
     timestamp: new Date()
   });
 
   setResultado("¡3 ESCALAS CORRECTAS! ✔");
+
+  // Vaciar cartas después de guardar
+  setCartas([]);
 };
+
 
 
 
