@@ -142,13 +142,28 @@ export function CariocaGame() {
       return;
     }
 
-    await addDoc(collection(db, "jugadascarioca"), {
-      cartas,
-      timestamp: new Date()
+    const tiposEscaleras = encontrado.map(escala => {
+      const sorted = escala.slice().sort((a, b) => a.numero - b.numero);
+      return `${sorted[0].numero}-${sorted[1].numero}-${sorted[2].numero}-${sorted[0].pinta}`;
     });
 
-    setResultado("¡3 ESCALAS CORRECTAS! ✔");
-    setCartas([]);
+    const conteo = {};
+    tiposEscaleras.forEach(tipo => {
+      conteo[tipo] = (conteo[tipo] || 0) + 1;
+    });
+
+    const maxRepeticiones = Math.max(...Object.values(conteo));
+    
+    if (maxRepeticiones <= 2) {
+      await addDoc(collection(db, "jugadascarioca"), {
+        cartas,
+        timestamp: new Date()
+      });
+      setResultado("¡3 ESCALAS CORRECTAS! ✔");
+      setCartas([]);
+    } else {
+      setResultado("NO FORMA JUEGO :C");
+    }
   };
 
   return (
