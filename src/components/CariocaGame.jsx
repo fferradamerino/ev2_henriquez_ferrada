@@ -15,21 +15,30 @@ export function CariocaGame() {
   // 1) Agregar Carta
   // -------------------------------
   const agregarCarta = () => {
-    if (!numero.trim()) return;
+  if (!numero.trim()) return;
 
-    if (parseInt(numero) < 1 || parseInt(numero) > 13) {
-      return
-    }
+  const convertido = convertirNumero(numero);
+  if (isNaN(convertido)) return; // evita valores inválidos
 
-    const nueva = {
-      id: crypto.randomUUID(),
-      numero: parseInt(numero),
-      pinta
-    };
-
-    setCartas([...cartas, nueva]);
-    setNumero("");
+  const nueva = {
+    id: crypto.randomUUID(),
+    numero: convertido,
+    pinta
   };
+
+  setCartas([...cartas, nueva]);
+  setNumero("");
+};
+
+  const convertirNumero = (valor) => {
+  const v = valor.toUpperCase();
+  if (v === "A") return 1;
+  if (v === "J") return 11;
+  if (v === "Q") return 12;
+  if (v === "K") return 13;
+  return parseInt(v); // números 2–10
+};
+
 
   // -------------------------------
   // 2) Eliminar carta con animación
@@ -43,6 +52,8 @@ export function CariocaGame() {
   // aceptamos **3 cartas consecutivas**
   // -------------------------------
   const esEscalera = (grupo) => {
+  if (grupo.length !== 3) return false;
+
   const mismaPinta = grupo.every(c => c.pinta === grupo[0].pinta);
   if (!mismaPinta) return false;
 
@@ -53,18 +64,35 @@ export function CariocaGame() {
     orden[2].numero === orden[1].numero + 1
   );
 };
-const validarTresEscalas = () => {
-  if (cartas.length !== 9) return false; // 3 escalas = 9 cartas
 
-  // Agrupar en grupos de 3 cartas consecutivas
-  const grupos = [];
-  for (let i = 0; i < cartas.length; i += 3) {
-    grupos.push(cartas.slice(i, i + 3));
+const detectarTresEscalas = () => {
+  if (cartas.length < 9) return false;
+
+  // Agrupar cartas por pinta
+  const porPinta = {};
+  cartas.forEach(c => {
+    if (!porPinta[c.pinta]) porPinta[c.pinta] = [];
+    porPinta[c.pinta].push(c);
+  });
+
+  let totalEscalas = 0;
+
+  // Por cada pinta buscamos todas las escalas posibles
+  for (const pinta in porPinta) {
+    const lista = porPinta[pinta].sort((a, b) => a.numero - b.numero);
+
+    // Buscar secuencias de 3 consecutivos
+    for (let i = 0; i < lista.length - 2; i++) {
+      const grupo = [lista[i], lista[i + 1], lista[i + 2]];
+      if (esEscalera(grupo)) {
+        totalEscalas++;
+      }
+    }
   }
 
-  // Revisar que los 3 grupos sean escaleras válidas
-  return grupos.every(g => g.length === 3 && esEscalera(g));
+  return totalEscalas === 3;
 };
+
 
 
   // -------------------------------
@@ -82,13 +110,12 @@ const validarTresEscalas = () => {
   // -------------------------------
   // Validar y guardar
   // -------------------------------
- const validarJuego = async () => {
-  if (!validarTresEscalas()) {
+const validarJuego = async () => {
+  if (!detectarTresEscalas()) {
     setResultado("NO FORMA JUEGO :C");
     return;
   }
 
-  // clave única de jugada (evita duplicados)
   const jugadaKey = cartas
     .map(c => `${c.numero}-${c.pinta}`)
     .sort()
@@ -107,6 +134,7 @@ const validarTresEscalas = () => {
 
   setResultado("¡3 ESCALAS CORRECTAS! ✔");
 };
+
 
 
   return (
