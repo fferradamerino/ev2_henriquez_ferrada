@@ -11,7 +11,6 @@ export function CariocaGame() {
   const [cartas, setCartas] = useState([]);
   const [resultado, setResultado] = useState("");
 
-  // --- Helpers num <-> display ---
   const convertirNumero = (valor) => {
     if (!valor) return NaN;
     const v = String(valor).trim().toUpperCase();
@@ -31,7 +30,6 @@ export function CariocaGame() {
     return n;
   };
 
-  // --- Agregar carta ---
   const agregarCarta = () => {
     if (!String(numero).trim()) return;
 
@@ -52,12 +50,10 @@ export function CariocaGame() {
     setResultado("");
   };
 
-  // --- Eliminar carta ---
   const eliminarCarta = (id) => {
     setCartas(prev => prev.filter(c => c.id !== id));
   };
 
-  // --- Escalera (3 cartas) ---
   const esEscalera = (grupo) => {
     if (!grupo || grupo.length !== 3) return false;
     const mismaPinta = grupo.every(c => c.pinta === grupo[0].pinta);
@@ -67,7 +63,6 @@ export function CariocaGame() {
            orden[2].numero === orden[1].numero + 1;
   };
 
-  // --- Encontrar todas las posibles escalas por pinta ---
   const encontrarEscalasPorPinta = (listaCartas) => {
     const porPinta = {};
     listaCartas.forEach(c => {
@@ -88,20 +83,16 @@ export function CariocaGame() {
     return todas; // array de grupos (cada grupo = 3 cartas)
   };
 
-  // --- Buscar combinación de 3 escalas disjuntas ---
   const encontrarTresEscalasDisjuntas = (listaCartas) => {
     const posibles = encontrarEscalasPorPinta(listaCartas);
-    // convertir cada grupo a set de ids para chequear intersección
     const gruposIds = posibles.map(g => g.map(c => c.id));
-
-    // backtracking para elegir 3 grupos sin solapamiento
     const n = gruposIds.length;
     const result = [];
 
     const backtrack = (start, chosen) => {
       if (chosen.length === 3) {
         result.push(chosen.map(idx => posibles[idx]));
-        return true; // podemos parar si solo necesitamos una combinación
+        return true;
       }
       for (let i = start; i < n; i++) {
         const idsI = gruposIds[i];
@@ -113,11 +104,9 @@ export function CariocaGame() {
     };
 
     backtrack(0, []);
-    // result[0] si existe, else undefined
     return result.length ? result[0] : null;
   };
 
-  // --- Ordenar por Escalera: agrupa las 3 escalas encontradas al inicio (si existen) ---
   const ordenarPorEscalera = () => {
     const encontrado = encontrarTresEscalasDisjuntas(cartas);
     if (!encontrado) {
@@ -127,48 +116,38 @@ export function CariocaGame() {
       return;
     }
 
-    // Flatten grupos (cada grupo ya es 3 cartas). Queremos suprimir duplicados y mantener
-    // el resto de cartas al final en su orden actual.
     const idsEnGrupos = new Set(encontrado.flat().map(c => c.id));
     const resto = cartas.filter(c => !idsEnGrupos.has(c.id));
 
-    // Ordeno cada grupo internamente por número asc para presentación limpia
     const gruposOrdenados = encontrado.map(g => g.slice().sort((a,b)=>a.numero-b.numero));
 
-    // Construyo nuevo array: grupos concatenados + resto
     const nuevoOrden = [].concat(...gruposOrdenados, ...resto);
     setCartas(nuevoOrden);
     setResultado("Se agruparon 3 escalas correctamente.");
     setTimeout(() => setResultado(""), 2200);
   };
 
-  // --- Ordenar por número ---
   const ordenarPorNumero = () => {
     setCartas(prev => [...prev].sort((a,b) => a.numero - b.numero));
   };
 
-  // --- Ordenar por pinta ---
   const ordenarPorPinta = () => {
     setCartas(prev => [...prev].sort((a,b) => a.pinta.localeCompare(b.pinta) || a.numero - b.numero));
   };
 
-  // --- (Opcional) Validar juego y guardar en Firebase (si quieres usarlo) ---
   const validarJuego = async () => {
-    // Reutilizamos la detección: para considerar válido hay que tener 3 escalas disjuntas
     const encontrado = encontrarTresEscalasDisjuntas(cartas);
     if (!encontrado) {
       setResultado("NO FORMA JUEGO :C");
       return;
     }
 
-    // Guardar
     await addDoc(collection(db, "jugadascarioca"), {
       cartas,
       timestamp: new Date()
     });
 
     setResultado("¡3 ESCALAS CORRECTAS! ✔");
-    // limpiar tablero
     setCartas([]);
   };
 
@@ -176,7 +155,6 @@ export function CariocaGame() {
     <div className="container mt-4">
       <h2 className="mb-3">Juego de Carioca</h2>
 
-      {/* Inputs */}
       <div className="d-flex gap-2 align-items-center">
         <input
           className="form-control"
@@ -198,7 +176,6 @@ export function CariocaGame() {
           className="btn btn-primary"
           onClick={agregarCarta}
           whileTap={{ scale: 0.9 }}
-          // pequeño "bump" rápido al agregar (se activará siempre, si quieres solo cuando hay agregado, se puede ajustar)
           animate={{ scale: [1, 1.03, 1] }}
           transition={{ duration: 0.18 }}
         >
@@ -218,7 +195,6 @@ export function CariocaGame() {
         </button>
       </div>
 
-      {/* Cartas */}
       <div className="d-flex gap-3 mt-4 flex-wrap">
         <AnimatePresence>
           {cartas.map(carta => (
@@ -266,7 +242,6 @@ export function CariocaGame() {
         <button className="btn btn-success" onClick={validarJuego}>Validar Juego</button>
       </div>
 
-      {/* Resultado animado */}
       {resultado && (
         <motion.h1
           className="mt-3"
