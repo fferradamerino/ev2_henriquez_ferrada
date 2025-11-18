@@ -1,15 +1,13 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Fragment } from "react";
+import ReactDOM from "react-dom/client";
+import { Steam } from "./components/Steam";
 
-import './css/bootstrap-5.3.8-dist/css/bootstrap.css'
+import "./css/bootstrap.min.css";
 
-function App() {
+export function App() {
   return (
-    <>
-      <form>
-      </form>
-  </>
+    <Fragment>
+      <Steam />
+    </Fragment>
   );
 }
-
-export default App;
